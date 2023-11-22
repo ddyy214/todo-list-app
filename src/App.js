@@ -33,12 +33,17 @@ const TodoItem = (props) => {
     >
       {props.todoItem.todoItemContent}
     </span>
+    <Button variant="outlined" onClick={() => props.onRemoveClick(props.todoItem)}>Remove</Button> {/*삭제버튼*/}
   </li>);
 }
 const TodoItemList = (props) => {
   const todoList = props.todoItemList.map((todoItem, index) => {
     // return <li key={index}>{todoItem.todoItemContent}</li>;
-    return <TodoItem key={todoItem.id} todoItem={todoItem} onTodoItemClick={props.onTodoItemClick}/>; //여기서
+    return <TodoItem                                            //여기서
+      key={todoItem.id} 
+      todoItem={todoItem} 
+      onTodoItemClick={props.onTodoItemClick}
+      onRemoveClick={props.onRemoveClick}/>;      //onRemoveClick 로직만들어줘랏
   });
   return (<div>
     <ul>{todoList}</ul>
@@ -72,12 +77,23 @@ function App() {
       }
     }))
   }
+
+  const onRemoveClick= (removedTodoItem) => {
+    setTodoItemList(todoItemList.filter((todoItem)=> {
+      return todoItem.id !== removedTodoItem.id;
+    }));
+  };
+
   return (
     <div className="App">
       {/* <TodoItemInputField/> */}
       <TodoItemInputField onSubmit={onSubmit} />
       {/* <TodoItemList todoItemList={[]} /> */}
-      <TodoItemList todoItemList={todoItemList} onTodoItemClick={onTodoItemClick}/>
+      <TodoItemList 
+        todoItemList={todoItemList} 
+        onTodoItemClick={onTodoItemClick}
+        onRemoveClick={onRemoveClick}
+        />
     </div>
   );
 }
