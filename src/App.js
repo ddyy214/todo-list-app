@@ -1,16 +1,12 @@
 import './App.css';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getFirestore, collection, addDoc, setDoc, doc, deleteDoc, getDocs } from "firebase/firestore";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-<<<<<<< HEAD
+
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_apikey,
   authDomain: process.env.REACT_APP_authDomain,
@@ -20,12 +16,11 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_appId,
   measurementId: process.env.REACT_APP_measurementId
 };
-=======
->>>>>>> 355c39c19c2325ca7708cf155cc20d15f400540f
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
+const db = getFirestore(app);
 const TodoItemInputField = (props) => {
   const [input, setInput] = useState("");
   const onSubmit = () => {
@@ -73,21 +68,43 @@ const TodoItemList = (props) => {
   </div>);
 };
 
-let todoItemId = 0;
 
 function App() {
   const [todoItemList, setTodoItemList] = useState([]);
 
-  const onSubmit = (newTodoItem) => {
-    setTodoItemList([...todoItemList, {
-      id: todoItemId++,
-      todoItemContent: newTodoItem,
-      isFinished: false,
+  useEffect(() => {
+    getDocs(collection(db, "todoItem")).then((querySnapshot) => {
+      const firestoreTodoItemList = [];
+      querySnapshot.forEach((doc) => {
+        firestoreTodoItemList.push({
+          id: doc.id,
+          todoItemContent: doc.data().todoItemContent,
+          isFinished: doc.data().isFinished,
+        });
+      });
+    setTodoItemList(firestoreTodoItemList);
+  });
+}, []);
+  // const onSubmit = (newTodoItem) => {
+    const onSubmit = async (newTodoItem) => {
+      const docRef = await addDoc(collection(db, "todoItem"), {
+        todoItemContent: newTodoItem,
+        isFinished: false,
+      });
+    
+      setTodoItemList([...todoItemList, {
+        // id: todoItemId++,
+        id: docRef.id,
+        todoItemContent: newTodoItem,
+        isFinished: false,
     }]);
   };
 
   //실제 바뀌는건 여기서 일어남
-  const onTodoItemClick = (clickedTodoItem) => {
+  const onTodoItemClick = async (clickedTodoItem) => {
+    const todoItemRef = doc(db, "todoItem", clickedTodoItem.id);
+    await setDoc(todoItemRef, { isFinished: !clickedTodoItem.isFinished }, { merge: true });
+
     setTodoItemList(todoItemList.map((todoItem) => {
       if (clickedTodoItem.id === todoItem.id) {
         return {
@@ -101,7 +118,9 @@ function App() {
     }))
   }
 
-  const onRemoveClick= (removedTodoItem) => {
+  const onRemoveClick= async (removedTodoItem) => {
+    const todoItemRef = doc(db, "todoItem", removedTodoItem.id);
+    await deleteDoc(todoItemRef);
     setTodoItemList(todoItemList.filter((todoItem)=> {
       return todoItem.id !== removedTodoItem.id;
     }));
