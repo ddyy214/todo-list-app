@@ -7,8 +7,8 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore, collection, addDoc, setDoc, doc, deleteDoc, getDocs, query, orderBy } from "firebase/firestore";
-import { GoogleAuthProvider, getAuth, signInWithRedirect, onAuthStateChanged, signOut } from "firebase/auth";
+import { getFirestore, collection, addDoc, setDoc, doc, deleteDoc, getDocs, query, orderBy, where, } from "firebase/firestore";
+import { GoogleAuthProvider, getAuth, signInWithRedirect, onAuthStateChanged, signOut, } from "firebase/auth";
 
 
 const firebaseConfig = {
@@ -41,8 +41,7 @@ const TodoItemInputField = (props) => {
       id="todo-item-input"
       label="Todo Item"
       variant="outlined"
-      value={input}
-      onChange={(e) => setInput(e.target.value)}
+      onChange={(e) => setInput(e.target.value)} value = {input}
     />
     {/* <Button variant="outlined">Submit</Button> */}
     <Button variant="outlined" onClick={onSubmit}>Submit</Button>  
@@ -66,7 +65,7 @@ const TodoItemList = (props) => {
   const todoList = props.todoItemList.map((todoItem, index) => {
     // return <li key={index}>{todoItem.todoItemContent}</li>;
     return <TodoItem                                            //여기서
-      key={todoItem.id} 
+      key={index} 
       todoItem={todoItem} 
       onTodoItemClick={props.onTodoItemClick}
       onRemoveClick={props.onRemoveClick}/>;      //onRemoveClick 로직만들어줘랏
@@ -115,7 +114,8 @@ function App() {
 
   // useEffect(() => {
   const syncTodoItemListStateWithFirestore = () => {
-    const q = query(collection(db, "todoItem"), orderBy("createdTime", "desc"));
+    // const q = query(collection(db, "todoItem"), orderBy("createdTime", "desc"));
+    const q = query(collection(db, "todoItem"), where("userId", "==", currentUser), orderBy("createdTime", "desc"));
     getDocs(q).then((querySnapshot) => {
       const firestoreTodoItemList = [];
       querySnapshot.forEach((doc) => {
@@ -124,6 +124,7 @@ function App() {
           todoItemContent: doc.data().todoItemContent,
           isFinished: doc.data().isFinished,
           createdTime: doc.data().createdTime ?? 0,
+          userId: doc.data().userId,
         });
       });
     setTodoItemList(firestoreTodoItemList);
@@ -132,7 +133,7 @@ function App() {
 
 useEffect(() => {
   syncTodoItemListStateWithFirestore();
-}, []);
+}, [currentUser]);
 // const onSubmit = (newTodoItem) => {
 const onSubmit = async (newTodoItem) => {
   // const docRef = await addDoc(collection(db, "todoItem"), {
@@ -140,6 +141,7 @@ const onSubmit = async (newTodoItem) => {
     todoItemContent: newTodoItem,
     isFinished: false,
     createdTime: Math.floor(Date.now() / 1000),
+    userId: currentUser,
   });
   syncTodoItemListStateWithFirestore();
 };
