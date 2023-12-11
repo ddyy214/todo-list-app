@@ -20,6 +20,8 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import theme from './theme';
 
+import backgroundImage from './img/snoopy_spoon.png';
+
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore, collection, addDoc, setDoc, doc, deleteDoc, getDocs, query, orderBy, where, } from "firebase/firestore";
@@ -130,8 +132,8 @@ const TodoListAppBar = (props) => {
   const button = props.currentUser === null ? loginWithGoogleButton : logoutButton;
   return (
     <AppBar position="static">
-      <Toolbar sx={{ width: "100%", maxWidth: 720, margin: "auto", justifyContent: "center", paddingY: 6}}>
-        <Typography variant="h2" component="div">
+      <Toolbar sx={{ width: "100%", maxWidth: 720, margin: "auto", justifyContent: "center", paddingY: 1}}>
+        <Typography variant="h5" component="div">
           Todo List App
         </Typography>
        
@@ -209,7 +211,6 @@ const onSubmit = async (newTodoItem) => {
   return (
     <ThemeProvider theme={theme}>
     <CssBaseline />
-    <div className="App">
       <TodoListAppBar currentUser={currentUser} />
       <Container sx={{paddingTop: 3}}>
         <TodoItemInputField onSubmit={onSubmit} />
@@ -219,6 +220,16 @@ const onSubmit = async (newTodoItem) => {
           onRemoveClick={onRemoveClick}
         />
       </Container>
+    <div
+        className="App"
+        style={{
+          backgroundImage: `url(${backgroundImage})`,
+          backgroundSize: 'contain',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+          minHeight: '70vh',
+        }}
+      >
      </div>
       </ThemeProvider>
    );
